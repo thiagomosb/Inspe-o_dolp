@@ -54,15 +54,6 @@ def connect_to_mariadb():
                 empresa_selecionada = st.sidebar.selectbox("Selecione a Empresa", empresas_unicas, index=0)
                 unidades_unicas = df[df['nom_fant'] == empresa_selecionada]['unidade'].unique()
 
-                # Barra lateral para seleção de página
-                grafico_selecionado = st.sidebar.selectbox("Selecione o Gráfico", [
-                    "Quantidade de Blitz por Instrutor",
-                    "Quantidade de Inspeção por Equipe",
-                    "Taxa de Contato",
-                    "Não Conformidades Apontadas",
-                    "Integrantes Equipes"
-                ])
-
                 # Alteração para multiselect nas unidades
                 unidades_selecionadas = st.sidebar.multiselect(
                     "Selecione as Unidades",
@@ -80,7 +71,14 @@ def connect_to_mariadb():
                 funcoes_selecionadas = st.sidebar.multiselect("Selecione as Funções", funcoes_unicas,
                                                               default=funcoes_unicas)
 
-
+                # Barra lateral para seleção de página
+                grafico_selecionado = st.sidebar.selectbox("Selecione o Gráfico", [
+                    "Quantidade de Blitz por Instrutor",
+                    "Quantidade de Inspeção por Equipe",
+                    "Taxa de Contato",
+                    "Não Conformidades Apontadas",
+                    "Integrantes Equipes"
+                ])
 
                 instrutores_unicos = \
                 df[(df['nom_fant'] == empresa_selecionada) & (df['unidade'].isin(unidades_selecionadas))][
@@ -578,14 +576,13 @@ def connect_to_mariadb():
                             # Linha de separação após o gráfico de pizza
 
 #-----------------------------------------------------------------------------------------------------------------------------------------
-
-
-                        # Supondo que df_filtrado e df_turnos já estão carregados com dados
-
-                        # Supondo que df_filtrado e df_turnos já estão carregados com dados
-
                         # Linha de separação as equipes
                         st.markdown("<hr>", unsafe_allow_html=True)
+
+
+
+                        # Configurar a localização para português do Brasil
+                        locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
 
                         # Agrupar por mês para calcular as porcentagens para cada mês
                         inspecionadas_por_mes = df_filtrado.groupby(df_filtrado['data_blitz'].dt.month)[
@@ -634,8 +631,9 @@ def connect_to_mariadb():
 
                         # Gráfico de barras para a porcentagem de equipes Inspecionadas-----------------------------
 
-                        st.markdown("<h2 style='text-align: center;'> Taxa de Contato da Equipes Inspecionadas </h2>",
-                                    unsafe_allow_html=True)
+                        st.markdown(
+                            "<h2 style='text-align: center;'> Taxa de Contato da Equipes Inspecionadas </h2>",
+                            unsafe_allow_html=True)
 
                         fig1, ax1 = plt.subplots(figsize=(10, 6))
                         bars1 = ax1.bar(inspecionadas_nao_inspecionadas['Mês'],
@@ -665,10 +663,6 @@ def connect_to_mariadb():
                             ax1.text(bar.get_x() + bar.get_width() / 2, yval + 1, f'{yval:.2f}%', ha='center',
                                      va='bottom', color='black')
 
-                        # Tente usar plt.show() para debugar
-                        plt.show()  # Para visualizar o gráfico localmente
-
-                        # Se o gráfico aparecer no console, use o st.pyplot para exibir no Streamlit
                         st.pyplot(fig1)
 
                         # Linha de separação após o gráfico de pizza
@@ -676,9 +670,9 @@ def connect_to_mariadb():
 
                         # Gráfico de barras para a porcentagem de equipes Não Inspecionadas----------------------------------------
 
-                        st.markdown(
-                            "<h2 style='text-align: center;'> Taxa de Contato da Equipes Não Inspecionadas </h2>",
-                            unsafe_allow_html=True)
+                        st.markdown("<h2 style='text-align: center;'> Taxa de Contato da Equipes Não Inspecionadas </h2>",
+                                    unsafe_allow_html=True)
+
 
                         fig2, ax2 = plt.subplots(figsize=(10, 6))
                         bars2 = ax2.bar(inspecionadas_nao_inspecionadas['Mês'],
@@ -689,6 +683,7 @@ def connect_to_mariadb():
                         ax2.set_ylim(0, 100)  # Limite do eixo Y entre 0 e 100
                         plt.xticks(rotation=45)
 
+                        # Removendo o título do gráfico
                         # Removendo o título do gráfico
                         ax2.set_title("")  # Título vazio, ocultando o título do gráfico
 
@@ -711,11 +706,9 @@ def connect_to_mariadb():
                             ax2.text(bar.get_x() + bar.get_width() / 2, yval + 1, f'{yval:.2f}%', ha='center',
                                      va='bottom', color='black')
 
-                        # Tente usar plt.show() para debugar
-                        plt.show()  # Para visualizar o gráfico localmente
-
-                        # Se o gráfico aparecer no console, use o st.pyplot para exibir no Streamlit
                         st.pyplot(fig2)
+
+                        
 
                         #------------------------------------------------------------------------------------------------
 
