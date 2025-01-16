@@ -578,6 +578,12 @@ def connect_to_mariadb():
                             # Linha de separação após o gráfico de pizza
 
 #-----------------------------------------------------------------------------------------------------------------------------------------
+
+
+                        # Supondo que df_filtrado e df_turnos já estão carregados com dados
+
+                        # Supondo que df_filtrado e df_turnos já estão carregados com dados
+
                         # Linha de separação as equipes
                         st.markdown("<hr>", unsafe_allow_html=True)
 
@@ -659,6 +665,10 @@ def connect_to_mariadb():
                             ax1.text(bar.get_x() + bar.get_width() / 2, yval + 1, f'{yval:.2f}%', ha='center',
                                      va='bottom', color='black')
 
+                        # Tente usar plt.show() para debugar
+                        plt.show()  # Para visualizar o gráfico localmente
+
+                        # Se o gráfico aparecer no console, use o st.pyplot para exibir no Streamlit
                         st.pyplot(fig1)
 
                         # Linha de separação após o gráfico de pizza
@@ -701,9 +711,11 @@ def connect_to_mariadb():
                             ax2.text(bar.get_x() + bar.get_width() / 2, yval + 1, f'{yval:.2f}%', ha='center',
                                      va='bottom', color='black')
 
+                        # Tente usar plt.show() para debugar
+                        plt.show()  # Para visualizar o gráfico localmente
+
+                        # Se o gráfico aparecer no console, use o st.pyplot para exibir no Streamlit
                         st.pyplot(fig2)
-
-
 
                         #------------------------------------------------------------------------------------------------
 
