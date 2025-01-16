@@ -581,11 +581,6 @@ def connect_to_mariadb():
                         # Linha de separação as equipes
                         st.markdown("<hr>", unsafe_allow_html=True)
 
-
-
-                        # Configurar a localização para português do Brasil
-                        locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
-
                         # Agrupar por mês para calcular as porcentagens para cada mês
                         inspecionadas_por_mes = df_filtrado.groupby(df_filtrado['data_blitz'].dt.month)[
                             'num_operacional'].nunique()
@@ -633,9 +628,8 @@ def connect_to_mariadb():
 
                         # Gráfico de barras para a porcentagem de equipes Inspecionadas-----------------------------
 
-                        st.markdown(
-                            "<h2 style='text-align: center;'> Taxa de Contato da Equipes Inspecionadas </h2>",
-                            unsafe_allow_html=True)
+                        st.markdown("<h2 style='text-align: center;'> Taxa de Contato da Equipes Inspecionadas </h2>",
+                                    unsafe_allow_html=True)
 
                         fig1, ax1 = plt.subplots(figsize=(10, 6))
                         bars1 = ax1.bar(inspecionadas_nao_inspecionadas['Mês'],
@@ -672,9 +666,9 @@ def connect_to_mariadb():
 
                         # Gráfico de barras para a porcentagem de equipes Não Inspecionadas----------------------------------------
 
-                        st.markdown("<h2 style='text-align: center;'> Taxa de Contato da Equipes Não Inspecionadas </h2>",
-                                    unsafe_allow_html=True)
-
+                        st.markdown(
+                            "<h2 style='text-align: center;'> Taxa de Contato da Equipes Não Inspecionadas </h2>",
+                            unsafe_allow_html=True)
 
                         fig2, ax2 = plt.subplots(figsize=(10, 6))
                         bars2 = ax2.bar(inspecionadas_nao_inspecionadas['Mês'],
@@ -685,7 +679,6 @@ def connect_to_mariadb():
                         ax2.set_ylim(0, 100)  # Limite do eixo Y entre 0 e 100
                         plt.xticks(rotation=45)
 
-                        # Removendo o título do gráfico
                         # Removendo o título do gráfico
                         ax2.set_title("")  # Título vazio, ocultando o título do gráfico
 
