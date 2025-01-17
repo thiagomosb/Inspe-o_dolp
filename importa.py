@@ -991,7 +991,7 @@ def connect_to_mariadb():
 
         except Error as e:
             print(f"Erro ao conectar ao MariaDB: {e}")
-        
+
 
     # Chame a função de conexão para executar o script
 connect_to_mariadb()
