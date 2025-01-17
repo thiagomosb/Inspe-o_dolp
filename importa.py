@@ -7,6 +7,7 @@ import seaborn as sns
 import locale
 
 def connect_to_mariadb():
+        global mostrar_grafico
         st.set_page_config(page_title="Inspeções Dinâmicas Dolp", page_icon="🦺", initial_sidebar_state="expanded")
 
         try:
@@ -579,8 +580,6 @@ def connect_to_mariadb():
                         # Linha de separação as equipes
                         st.markdown("<hr>", unsafe_allow_html=True)
 
-
-
                         # Configurar a localização para português do Brasil
                         locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
 
@@ -708,7 +707,7 @@ def connect_to_mariadb():
 
                         st.pyplot(fig2)
 
-                        
+
 
                         #------------------------------------------------------------------------------------------------
 
@@ -985,10 +984,7 @@ def connect_to_mariadb():
 
         except Error as e:
             print(f"Erro ao conectar ao MariaDB: {e}")
-        finally:
-            if connection.is_connected():
-                cursor.close()
-                connection.close()
+        
 
     # Chame a função de conexão para executar o script
 connect_to_mariadb()
