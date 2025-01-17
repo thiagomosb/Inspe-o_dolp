@@ -1,10 +1,10 @@
+
+import streamlit as st
 import mysql.connector
 from mysql.connector import Error
-import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-
 
 def connect_to_mariadb():
         st.set_page_config(page_title="Inspeções Dinâmicas Dolp", page_icon="🦺", initial_sidebar_state="expanded")
@@ -54,6 +54,15 @@ def connect_to_mariadb():
                 empresa_selecionada = st.sidebar.selectbox("Selecione a Empresa", empresas_unicas, index=0)
                 unidades_unicas = df[df['nom_fant'] == empresa_selecionada]['unidade'].unique()
 
+                # Barra lateral para seleção de página
+                grafico_selecionado = st.sidebar.selectbox("Selecione o Gráfico", [
+                    "QUANTIDADE DE INSPEÇÃO POR INSTRUTOR",
+                    "INSPEÇÃO POR EQUIPE",
+                    "TAXA DE CONTATO",
+                    "NÃO CONFORMIDADE APONTADAS",
+                    "INTEGRANTES DAS EQUIPES"
+                ])
+
                 # Alteração para multiselect nas unidades
                 unidades_selecionadas = st.sidebar.multiselect(
                     "Selecione as Unidades",
@@ -71,14 +80,7 @@ def connect_to_mariadb():
                 funcoes_selecionadas = st.sidebar.multiselect("Selecione as Funções", funcoes_unicas,
                                                               default=funcoes_unicas)
 
-                # Barra lateral para seleção de página
-                grafico_selecionado = st.sidebar.selectbox("Selecione o Gráfico", [
-                    "Quantidade de Blitz por Instrutor",
-                    "Quantidade de Inspeção por Equipe",
-                    "Taxa de Contato",
-                    "Não Conformidades Apontadas",
-                    "Integrantes Equipes"
-                ])
+
 
                 instrutores_unicos = \
                 df[(df['nom_fant'] == empresa_selecionada) & (df['unidade'].isin(unidades_selecionadas))][
@@ -152,7 +154,7 @@ def connect_to_mariadb():
                 if grafico_selecionado == "Dashboard":
                     st.title("Dashboard Inspeções Dinâmicas")
 
-                elif grafico_selecionado == "Integrantes Equipes":
+                elif grafico_selecionado == "INTEGRANTES DAS EQUIPES":
                     st.title("Integrantes das Equipes")
 
                     # Contar as blitz realizadas por equipe (turnos distintos)
@@ -282,12 +284,12 @@ def connect_to_mariadb():
 
                 #  Grafico de Quantidade de Blitz Por Instrutor---------------------------------------------------------
 
-                if grafico_selecionado == "Quantidade de Blitz por Instrutor":
+                if grafico_selecionado == "QUANTIDADE DE INSPEÇÃO POR INSTRUTOR":
                     # Adicionando uma opção na tela principal para o gráfico, com valor padrão como False
                     mostrar_grafico = st.checkbox("Mostrar gráfico de Blitz por Instrutor", value=False)
 
 
-                if grafico_selecionado == "Quantidade de Blitz por Instrutor":
+                if grafico_selecionado == "QUANTIDADE DE INSPEÇÃO POR INSTRUTOR":
                     blitz_por_instrutor = df_filtrado.groupby("nome_inspetor").agg(
                         quantidade_blitz=('idtb_turnos', 'nunique')).reset_index()
 
@@ -351,7 +353,7 @@ def connect_to_mariadb():
 
 
 
-                elif grafico_selecionado == "Quantidade de Inspeção por Equipe":
+                elif grafico_selecionado == "INSPEÇÃO POR EQUIPE":
                     st.markdown("<h2 style='text-align: center;'>Equipes Inspecionas </h2>",
                                 unsafe_allow_html=True)
 
@@ -391,7 +393,7 @@ def connect_to_mariadb():
 
                 #----------------------------------------------------------------------------------------------------------------------------
 #cartão tipo de equipes------------------------------------------------------------------------------------------
-                if grafico_selecionado == "Quantidade de Inspeção por Equipe":
+                if grafico_selecionado == "INSPEÇÃO POR EQUIPE":
 
                     st.markdown("<h2 style='text-align: center;'>Tipo de Equipes Inspecionadas </h2>",
                                 unsafe_allow_html=True)
@@ -472,10 +474,10 @@ def connect_to_mariadb():
 
                 # Gráfico Taxa de Contato -----------------------------------------------------------------------------
 
-                if grafico_selecionado == "Taxa de Contato":
+                if grafico_selecionado == "TAXA DE CONTATO":
 
                     # Exibindo a tabela de Inspeções por Mês
-                    if grafico_selecionado == "Taxa de Contato":
+                    if grafico_selecionado == "TAXA DE CONTATO":
                         st.markdown("<h2 style='text-align: center;'> Taxa de Contato </h2>",
                                     unsafe_allow_html=True)
 
@@ -715,7 +717,7 @@ def connect_to_mariadb():
 
                         #------------------------------------------------------------------------------------------------
 
-                elif grafico_selecionado == "Não Conformidades Apontadas":
+                elif grafico_selecionado == "NÃO CONFORMIDADE APONTADAS":
 
                         # Gráfico de pizza para "Não Conformidades Apontadas Pelas Inspeções"
 
