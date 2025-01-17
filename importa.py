@@ -4,16 +4,14 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-import locale
+
 
 
 # Tente configurar 'C.UTF-8' como fallback, caso 'pt_BR.UTF-8' não funcione
-try:
-    locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
-except locale.Error:
-    locale.setlocale(locale.LC_TIME, 'C.UTF-8')
+
 
 def connect_to_mariadb():
+
         global mostrar_grafico
         st.set_page_config(page_title="Inspeções Dinâmicas Dolp", page_icon="🦺", initial_sidebar_state="expanded")
 
@@ -587,8 +585,7 @@ def connect_to_mariadb():
                         # Linha de separação as equipes
                         st.markdown("<hr>", unsafe_allow_html=True)
 
-                        # Configurar a localização para português do Brasil
-                        locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
+                     
 
                         # Agrupar por mês para calcular as porcentagens para cada mês
                         inspecionadas_por_mes = df_filtrado.groupby(df_filtrado['data_blitz'].dt.month)[
