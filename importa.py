@@ -541,7 +541,7 @@ def connect_to_mariadb():
                                     unsafe_allow_html=True)
 
                         #-------------------------------------------------------------------------------------------------------------
-                                # Grafico de Integrantes Por  Equipes -----------------------------------------------------------------
+                                # Grafico de barra  -----------------------------------------------------------------
 
 
                         #--------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -573,7 +573,7 @@ def connect_to_mariadb():
                             porcentagens_nao_inspecionadas_por_mes.append(
                                 round(porcentagem_nao_inspecionada, 2))  # Limitar para 2 casas decimais
 
-                            # Linha de separação após o gráfico de pizza
+
 
 
 
@@ -612,19 +612,26 @@ def connect_to_mariadb():
                             porcentagens_nao_inspecionadas_por_mes.append(
                                 round(porcentagem_nao_inspecionada, 2))  # Limitar para 2 casas decimais
 
+                        # Lista com os nomes dos meses em português
+                        nomes_meses = [
+                            "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+                            "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
+                        ]
 
+                        # Convertendo os números dos meses para nomes em português
                         inspecionadas_nao_inspecionadas = pd.DataFrame({
-                            'Mês': [pd.to_datetime(f'{ano_selecionado}-{mes:02d}-01').strftime('%B') for mes in
-                                    meses_selecionados],
+                            'Mês': [nomes_meses[mes - 1] for mes in meses_selecionados],
                             'Porcentagem Inspecionada': porcentagens_inspecionadas_por_mes,
                             'Porcentagem Não Inspecionada': porcentagens_nao_inspecionadas_por_mes,
                         })
 
-
-
                         # Ordenar o DataFrame pela coluna "Mês"
+                        inspecionadas_nao_inspecionadas['Mês'] = pd.Categorical(
+                            inspecionadas_nao_inspecionadas['Mês'],
+                            categories=nomes_meses,
+                            ordered=True
+                        )
                         inspecionadas_nao_inspecionadas = inspecionadas_nao_inspecionadas.sort_values('Mês')
-
                         # Gráfico de barras para a porcentagem de equipes Inspecionadas-----------------------------
 
                         st.markdown(
