@@ -6,13 +6,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 
-
-# Tente configurar 'C.UTF-8' como fallback, caso 'pt_BR.UTF-8' não funcione
-
-
 def connect_to_mariadb():
-
-        global mostrar_grafico
         st.set_page_config(page_title="Inspeções Dinâmicas Dolp", page_icon="🦺", initial_sidebar_state="expanded")
 
         try:
@@ -581,11 +575,14 @@ def connect_to_mariadb():
 
                             # Linha de separação após o gráfico de pizza
 
+
+
 #-----------------------------------------------------------------------------------------------------------------------------------------
                         # Linha de separação as equipes
                         st.markdown("<hr>", unsafe_allow_html=True)
 
-                     
+
+
 
                         # Agrupar por mês para calcular as porcentagens para cada mês
                         inspecionadas_por_mes = df_filtrado.groupby(df_filtrado['data_blitz'].dt.month)[
@@ -615,9 +612,7 @@ def connect_to_mariadb():
                             porcentagens_nao_inspecionadas_por_mes.append(
                                 round(porcentagem_nao_inspecionada, 2))  # Limitar para 2 casas decimais
 
-                        # Criando a tabela para exibir as porcentagens com a ordem correta dos meses
-                        ordem_meses = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto',
-                                       'setembro', 'outubro', 'novembro', 'dezembro']
+
                         inspecionadas_nao_inspecionadas = pd.DataFrame({
                             'Mês': [pd.to_datetime(f'{ano_selecionado}-{mes:02d}-01').strftime('%B') for mes in
                                     meses_selecionados],
@@ -625,9 +620,7 @@ def connect_to_mariadb():
                             'Porcentagem Não Inspecionada': porcentagens_nao_inspecionadas_por_mes,
                         })
 
-                        # Ajustar a coluna "Mês" para ser categórica com uma ordem específica
-                        inspecionadas_nao_inspecionadas['Mês'] = pd.Categorical(inspecionadas_nao_inspecionadas['Mês'],
-                                                                                categories=ordem_meses, ordered=True)
+
 
                         # Ordenar o DataFrame pela coluna "Mês"
                         inspecionadas_nao_inspecionadas = inspecionadas_nao_inspecionadas.sort_values('Mês')
@@ -988,7 +981,10 @@ def connect_to_mariadb():
 
         except Error as e:
             print(f"Erro ao conectar ao MariaDB: {e}")
-
+        finally:
+            if connection.is_connected():
+                cursor.close()
+                connection.close()
 
     # Chame a função de conexão para executar o script
 connect_to_mariadb()
