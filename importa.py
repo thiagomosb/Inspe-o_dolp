@@ -38,18 +38,23 @@ def connect_to_mariadb():
 
                 # Executando a consulta para pegar os dados de blitz, turnos e pessoas
                 query = """
-                SELECT b.nome_inspetor, b.num_operacional, b.idtb_turnos, b.data_blitz, t.nom_fant, t.unidade, p.funcao, p.nome, t.tipo
+                SELECT 
+                    b.nome_inspetor, b.num_operacional, b.idtb_turnos, b.data_blitz, t.nom_fant, t.unidade, 
+                    p.funcao, p.nome, t.tipo, p2.funcao_geral
                 FROM view_power_bi_blitz_contatos b
                 JOIN view_power_bi_turnos t ON b.idtb_turnos = t.idtb_turnos
                 JOIN view_power_bi_turnos_pessoas p ON b.idtb_turnos = p.idtb_turnos
+                JOIN view_power_bi_pessoas p2 ON b.nome_inspetor = p2.nome
                 """
                 cursor.execute(query)
                 resultados = cursor.fetchall()
 
                 # Criando um DataFrame com os dados de blitz
+                # Criando um DataFrame
                 df = pd.DataFrame(resultados,
                                   columns=["nome_inspetor", "num_operacional", "idtb_turnos", "data_blitz", "nom_fant",
-                                           "unidade", "funcao", "nome","tipo"])
+                                           "unidade", "funcao", "nome", "tipo", "funcao_geral"])
+                df['data_blitz'] = pd.to_datetime(df['data_blitz'])
 
                 # Convertendo a coluna data_blitz para datetime
                 df['data_blitz'] = pd.to_datetime(df['data_blitz'])
@@ -76,6 +81,7 @@ def connect_to_mariadb():
                     "TAXA DE CONTATO",
                     "NÃO CONFORMIDADE APONTADAS",
                     "INTEGRANTES DAS EQUIPES"
+
                 ])
 
                 # Alteração para multiselect nas unidades
@@ -89,6 +95,11 @@ def connect_to_mariadb():
                 tipos_unicos = df['tipo'].unique()
                 tipos_selecionados = st.sidebar.multiselect("Selecione os Tipos de Equipe", tipos_unicos,
                                                             default=tipos_unicos)
+
+                # Novo filtro para a função do inspetor
+                funcoes_gerais_unicas = df['funcao_geral'].unique()
+                funcao_geral_selecionada = st.sidebar.multiselect("Selecione a Função do Inspetor",
+                                                                  funcoes_gerais_unicas, default=funcoes_gerais_unicas)
 
                 # Filtro para selecionar múltiplas funções
                 funcoes_unicas = df['funcao'].unique()
@@ -111,8 +122,10 @@ def connect_to_mariadb():
                     (df['unidade'].isin(unidades_selecionadas)) &
                     (df['nome_inspetor'].isin(instrutores_selecionados)) &
                     (df['tipo'].isin(tipos_selecionados)) &
-                    (df['funcao'].isin(funcoes_selecionadas))# Filtro de tipo de equipe
+                    (df['funcao'].isin(funcoes_selecionadas)) &   # Filtro de tipo de equipe
+                    (df['funcao_geral'].isin(funcao_geral_selecionada))
                     ]
+
 
                 # Consulta para pegar os dados de turnos
                 query_turnos = f"""
@@ -362,7 +375,7 @@ def connect_to_mariadb():
 
                     ## Grafico Quatidade de Inspeção Por Equipes -------------------------------------------------------------------------------------------
 
-                    st.markdown("<hr>", unsafe_allow_html=True)
+
 
 
 
@@ -800,9 +813,53 @@ def connect_to_mariadb():
 
                         st.pyplot(fig4)
 
-                        # Linha de separação após o gráfico
 
-                        st.markdown("<hr>", unsafe_allow_html=True)
+                        #----------------------------------------
+
+
+                        # Agrupando por pergunta e contando a quantidade de reprovações
+                        tabela_perguntas = df_respostas_filtradas.groupby('pergunta').size().reset_index(
+                            name='quantidade')
+
+                        # Ordenando os dados pela quantidade em ordem decrescente para o gráfico de Pareto
+                        tabela_perguntas = tabela_perguntas.sort_values(by='quantidade', ascending=False)
+
+                        # Calculando a porcentagem acumulada
+                        tabela_perguntas['porcentagem_acumulada'] = tabela_perguntas['quantidade'].cumsum() / \
+                                                                    tabela_perguntas['quantidade'].sum() * 100
+
+                        # Criando o gráfico de Pareto
+                        fig, ax1 = plt.subplots(figsize=(10, 6))
+
+                        # Gráfico de barras para a quantidade
+                        ax1.bar(tabela_perguntas['pergunta'], tabela_perguntas['quantidade'], color='C0')
+                        ax1.set_xlabel('Perguntas')
+                        ax1.set_ylabel('Quantidade de Reprovações', color='C0')
+                        ax1.tick_params(axis='y', labelcolor='C0')
+
+                        # Gráfico de linha para a porcentagem acumulada
+                        ax2 = ax1.twinx()
+                        ax2.plot(tabela_perguntas['pergunta'], tabela_perguntas['porcentagem_acumulada'], color='C1',
+                                 marker='o', linestyle='-')
+                        ax2.set_ylabel('Porcentagem Acumulada', color='C1')
+                        ax2.tick_params(axis='y', labelcolor='C1')
+                        ax2.axhline(80, color='gray', linestyle='--')  # Linha de 80% para referência
+
+                        # Título do gráfico
+                        plt.title('Gráfico de Pareto de Perguntas Reprovadas por Quantidade')
+
+                        # Ajustando a visualização
+                        plt.xticks(rotation=45, ha='right')
+                        plt.tight_layout()
+
+                        # Mostrando o gráfico
+                        plt.show()
+                        #-----------------------------------------
+
+
+                #------------------------------------------
+                st.markdown("<hr>", unsafe_allow_html=True)
+                if grafico_selecionado == "NÃO CONFORMIDADE APONTADAS":
 
                         # Indicadores de Não Conformidade por Inspetor
 
@@ -836,6 +893,106 @@ def connect_to_mariadb():
                                             nao_conformidade_por_inspetor['nome_inspetor']}
 
                         # Estilo para os cartões
+
+                        # Centralizar título usando HTML
+                        st.markdown("<h2 style='text-align: center;'>Grafico de Pareto </h2>",
+                                    unsafe_allow_html=True)
+
+
+
+                        # Gráfico de Pareto para "Perguntas Reprovadas"
+                        tabela_perguntas = df_respostas_filtradas.groupby('pergunta').size().reset_index(
+                            name='quantidade')
+                        tabela_perguntas = tabela_perguntas.sort_values(by='quantidade', ascending=False)
+                        tabela_perguntas['porcentagem_acumulada'] = tabela_perguntas['quantidade'].cumsum() / \
+                                                                    tabela_perguntas['quantidade'].sum() * 100
+
+                        fig, ax1 = plt.subplots(figsize=(10, 6))
+
+                        # Determinar cores: vermelho para os 20% principais, azul para o restante
+                        cores = ['red' if pct <= 40 else 'C0' for pct in tabela_perguntas['porcentagem_acumulada']]
+
+                        # Gráfico de barras para a quantidade
+                        ax1.bar(tabela_perguntas['pergunta'], tabela_perguntas['quantidade'], color=cores)
+                        ax1.set_xlabel('Perguntas')
+                        ax1.set_ylabel('Quantidade de Reprovações', color='C0')
+
+                        ax2 = ax1.twinx()
+                        ax2.plot(tabela_perguntas['pergunta'], tabela_perguntas['porcentagem_acumulada'], color='C1',
+                                 marker='o', linestyle='-')
+                        ax2.set_ylabel('Porcentagem Acumulada', color='C1')
+                        ax2.tick_params(axis='y', labelcolor='C1')
+                        ax2.axhline(80, color='red', linestyle='--')  # Linha de 80% em vermelho
+
+                        for i, v in enumerate(tabela_perguntas['quantidade']):
+                            ax1.text(i, v + 1, str(v), ha='center', va='bottom', fontsize=12, color='black')
+
+                        plt.title('Gráfico de Pareto de Perguntas Reprovadas por Quantidade')
+                        plt.xticks(rotation=45, ha='right')
+                        plt.xticks(range(len(tabela_perguntas)), [])  # Remover os rótulos do eixo X
+                        plt.tight_layout()
+
+                        # Removendo o título do gráfico
+                        ax2.set_title("")  # Título vazio, ocultando o título do gráfico
+                        # Remover o eixo Y (sem valores)
+                        ax1.set_yticklabels([])
+
+                        # Remover bordas e as linhas de grade
+                        ax2.spines['top'].set_visible(False)
+                        ax2.spines['right'].set_visible(False)
+                        ax2.spines['left'].set_visible(False)
+                        ax2.spines['bottom'].set_visible(False)
+                        ax2.set_ylabel('')  # Remover o título do eixo Y da linha
+
+
+                        # Removendo os títulos dos eixos X e Y
+                        ax1.set_xlabel('')  # Título do eixo X removido
+                        ax1.set_ylabel('')  # Título do eixo Y removido
+                        # Remover o fundo e as linhas
+                        sns.set(style="white")  # Configura o fundo para branco sem grid ou linhas
+                        # Remover os valores do eixo Y
+                        ax1.set_yticks([])  # Remove os valores do eixo Y
+                        # Remover fundo e as bordas
+                        ax1.spines['top'].set_visible(False)
+                        ax1.spines['right'].set_visible(False)
+                        ax1.spines['left'].set_visible(False)
+                        ax1.spines['bottom'].set_visible(False)
+
+                        # Remover os ticks das bordas
+                        ax1.tick_params(axis='both', which='both', length=0)
+
+                        st.pyplot(fig)
+
+                        # --tabela pareto---------------------------------------------------------------------------------------------------------
+
+                        # Renomeando a coluna 'porcentagem_acumulada' para 'Pareto'
+                        tabela_perguntas.rename(columns={'porcentagem_acumulada': 'Pareto'}, inplace=True)
+
+                        # Aplicando a formatação condicional e formatando a coluna 'Pareto'
+                        st.markdown("<hr>", unsafe_allow_html=True)
+
+                        # Centralizar título usando HTML
+                        st.markdown("<h2 style='text-align: center;'>Tabela de Pareto - Perguntas Reprovadas</h2>",
+                                    unsafe_allow_html=True)
+
+                        # Estilizando a tabela para destacar a linha dos 20% em vermelho
+                        def destacar_vinte_porcento(row):
+                            if row['Pareto'] <= 40:
+                                return ['background-color: red'] * len(row)
+                            else:
+                                return [''] * len(row)
+
+                        st.dataframe(
+                            tabela_perguntas.style
+                            .apply(destacar_vinte_porcento, axis=1)
+                            .format({"Pareto": "{:.2f}%"}  # Formatação para duas casas decimais e sinal de porcentagem
+                                    )
+                            .set_properties(**{'white-space': 'pre-wrap'})  # Quebra de linha na coluna 'pergunta'
+                        )
+
+                        st.markdown("<hr>", unsafe_allow_html=True)
+
+# nc por inspertor cartão -------------------------------------------------------------------------------------------------------
 
                         estilo_cartoes = """
 
@@ -911,7 +1068,9 @@ def connect_to_mariadb():
 
                         # Exibindo a tabela de perguntas reprovadas em cartões
 
-                        st.subheader("Perguntas Reprovadas")
+                        st.markdown("<h3 style='text-align: center;'>Perguntas Reprovadas</h3>",
+
+                                    unsafe_allow_html=True)
 
                         # Agrupar por equipe, pergunta e nome do inspetor
 
@@ -957,6 +1116,7 @@ def connect_to_mariadb():
 
                         # Primeira metade das perguntas reprovadas na primeira coluna
 
+
                         with col1:
 
                             for index, row in tabela_perguntas.iloc[:metade].iterrows():
@@ -993,15 +1153,7 @@ def connect_to_mariadb():
 
                                             f"</div>", unsafe_allow_html=True)
 
-
-
-
-
-
-
-
-
-
+#-----------------------------------------------------------------------------------------------------------------------------------
 
         except Error as e:
             print(f"Erro ao conectar ao MariaDB: {e}")
